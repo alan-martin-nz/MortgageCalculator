@@ -1,0 +1,92 @@
+<html>
+  <head>
+     <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+
+<script>
+    //Array of Markers
+ function myNewMarkers() {
+    var markers = [
+    {
+        coords: {lat: -36.8509, lng: 174.7645 },
+    //   iconImage: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png',
+        content:'<h1>Auckland New Zealand</h1>'
+    },
+    {
+        coords: {lat: -36.7269, lng: 174.6980 },
+        content:'<h1>Alan's at Albany New Zealand</h1>'
+    },
+    {
+        coords: {lat: -37.2004, lng: 174.9010 },
+        content:'<h1>Pukekohe New Zealand</h1>'
+    }
+
+    ];
+    return markers
+}
+</script>
+<script type='text/javascript'>
+
+      // Initialize and add the map
+
+    function initMap() {
+        //Map options
+       var options = {
+            zoom: 6,
+            center: { lat: -36.8509, lng: 174.7645 }
+        }
+
+        // New map, centered at Auckland
+        var map = new google.maps.Map(document.getElementById("map"), options);
+        var marker = ({ map, position }) => {
+          return new google.maps.Marker({ map, position });
+        };
+
+        myNewMarkers()
+
+        //Loop through Markers
+        for(var i = 0;i< markers.length;i++){
+
+            addMarker(markers[i]);
+
+        }
+
+        //Add Marker Function
+    function addMarker(props) {
+       var marker = new google.maps.Marker({
+          position: props.coords,
+          map: map,
+         // icon: props.iconImage
+       });
+
+        //Check for custom icon
+       if(props.iconImage){
+        //Set icon image
+        marker.setIcon(props.iconImage);
+        }
+
+        //Check content
+       if(props.content){
+         var infoWindow = new google.maps.InfoWindow({
+           content: props.content
+        });
+
+        marker.addListener('click', function(){
+          infoWindow.open(map, marker);
+        });
+       }
+    }
+
+}
+    </script>
+  </head>
+  <body>
+    <h3>Alan's Google Maps Demo</h3>
+    <!--The div element for the map -->
+    <div id="map"></div>
+
+    <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC2NoNCIAnf0x2XOrwJEBFySZ9uRskdetI&callback=initMap&libraries=&v=weekly"
+     ></script>
+  </body>
+</html>

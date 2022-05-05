@@ -1,0 +1,16 @@
+var markers = [
+    {
+    coords: {lat: -36.8509, lng: 174.7645 },
+    //iconImage: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png',
+    content:'<h1>Auckland New Zealand</h1>'
+    },
+    {
+    coords: {lat: -36.7269, lng: 174.6980 },
+    content:'<h1>Albany New Zealand</h1>'
+    },
+    {
+    coords: {lat: -37.2004, lng: 174.9010 },
+    content:'<h1>Pukekohe New Zealand</h1>'
+    }
+
+];

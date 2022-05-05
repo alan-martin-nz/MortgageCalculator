@@ -1,0 +1,198 @@
+<html>
+     <body>
+     <style>
+     h3 {
+        font-family: Arial;
+        vertical-align: middle;
+        color: black;
+      }
+     .child {
+        display: inline-block;
+        vertical-align: middle;
+        font-family: Arial;
+        color: black;
+     }
+     </style>
+     <h3>Mortgage Amortisation Chart</h3>
+     <div class='parent'>
+       <div class='child'>Loan Amount:</div>
+       <div class='child'><b><span id="principal"></span> &nbsp;</b></div>
+       <div class='child'>Interest Rate:</div>
+       <div class='child'><b><span id="interestRate"></span> &nbsp;</b></div>
+       <div class='child'>Term:</div>
+       <div class='child'><b><span id="loanTermYears"></span> &nbsp;</b></div>
+       <div class='child'>Payment Freq:</div>
+       <div class='child'><b><span id="payFreq"></span></b></div>
+     </div>
+     <!--Div that will hold the Chart-->
+      <div id='chart_div' style="width: 100%; height: 95%"></div>
+
+
+<!--Load the AJAX API-->
+       <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+
+       <script type='text/javascript'>
+
+            var curformatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0
+
+                // These options are needed to round to whole numbers if that's what you want.
+                //minimumFractionDigits: 0, // (this suffices for whole numbers, but will print 2500.10 as $2,500.1)
+                //maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
+               });
+
+            var intformatter = new Intl.NumberFormat('en-US', {
+                style: 'percent',
+                minimumFractionDigits: 2
+            });
+
+
+         // Load the Visualization API and the Chart package.
+         google.load('visualization', 'current', {'packages':['corechart']});
+
+         // Set a callback to run when the Google Visualization API is loaded.
+         google.setOnLoadCallback(drawChart);
+
+
+         // Callback that creates and populates a data table,
+         // instantiates the pie chart, passes in the data and
+         // draws it.
+         function drawChart() {
+
+           var uprincipal = ;
+           var uinterestRate = ;
+           var uloanTermYears = ;
+           var payFreq = "MONTHLY";
+
+               document.getElementById("principal").innerHTML = curformatter.format(principal);
+               document.getElementById("interestRate").innerHTML = intformatter.format(interestRate /100);
+               document.getElementById("loanTermYears").innerHTML = loanTermYears+" years";
+                document.getElementById("payFreq").innerHTML = payFreq;
+
+               var calcMonthlyInterestRate = interestRate/(1200);
+               var paymentPeriods = loanTermYears*12;
+               var calcMonthlyPayment = (calcMonthlyInterestRate /(1-(Math.pow((1+calcMonthlyInterestRate),-(paymentPeriods)))))*principal;
+               var paymentInterest = 0;
+               var principalPayment = 0;
+               var sumInterest = 0;
+               var sumPrincipal = 0;
+               var monthlyPayment = Math.round((calcMonthlyPayment + Number.EPSILON) * 100) / 100;
+               var startDate = '12-2021';
+               var month = parseInt(startDate.split("-")[0]);
+               var year = parseInt(startDate.split("-")[1]);
+               var startYear = year;
+               var endYear = startYear + loanTermYears;
+
+               var data = google.visualization.arrayToDataTable([
+                   //Column Headings
+                   [{type: 'number', label: 'Year'},
+                    {type: 'number', label: 'Interest'},
+                    {type: 'number', label: 'Principal'},
+                    {type: 'number', label: 'Balance'},]
+                   ]);
+                     //example data
+                 //  ['2021',  8834,      3255,         196745],
+                 //  ['2022',  8686,      3403,         193342],
+                 //  ['2023',  8532,      3558,         189784],
+                 //  ['2024',  8370,      3719,         186065],
+                 //  ['2025',  8201,      3888,         182177]
+
+
+          // Handles if startdate is December where first repayment is in following year.
+                data.addRow([year,0,0,principal]);
+
+                 if(month=12){
+                    var month = 1;
+                    loanTermYears = (loanTermYears * 12) + 1;
+                    year++;
+                 };
+
+             for(i = 0; i < loanTermYears; i++){
+
+
+                 if(month<=12){
+
+                     paymentInterest =  (principal*calcMonthlyInterestRate);
+                     principalPayment = (monthlyPayment-paymentInterest);
+                     principal -= principalPayment;
+
+                     var paymentInterest = Math.round(( paymentInterest + Number.EPSILON) * 100) / 100;
+                     var principalPayment = Math.round((principalPayment + Number.EPSILON) * 100) / 100;
+                     var principal = Math.round((principal + Number.EPSILON) * 100) / 100;
+
+                     var sumInterest = sumInterest + paymentInterest;
+                     var sumPrincipal = sumPrincipal + principalPayment;
+                     month++;
+                 }else{
+                     //start of new year
+                     data.addRow([year, sumInterest, sumPrincipal, principal]);
+                     var sumInterest = 0;
+                     var sumPrincipal = 0;
+                     month = 1;
+                     year++;
+                     i--;
+                 };
+             };
+
+
+                 var options = {
+                  legend:{alignment: 'center'},
+                 chartArea:{
+                 top: 45,
+                 },
+                 isStacked: true,
+                 pointSize: 10,
+                 pointShape: 'circle',
+                 vAxes: {
+                     // Adds titles to each axis.
+                     0: {title: 'Balance', format: 'short'},
+                     1: {title: 'Payments', format: 'short'}
+                   },
+                 hAxis: {
+                      viewWindow: {
+                         min: startYear,
+                         max: endYear
+                     },
+                     title: "Loan Term",
+                     format: '####'
+                 },
+                 seriesType: "bars",
+                 series: {
+                     0: {type: 'bars',
+                         targetAxisIndex: 1,
+                         color: 'blue'
+                     },
+                     1: { type: 'bars',
+                          targetAxisIndex: 1,
+                           color: 'red'
+                     },
+                     2: {type: "line",
+                         targetAxisIndex: 0,
+                         color: 'black'
+
+                     }
+                 },
+                 axes: {
+                     y: {
+                         0: {
+                             label: 'leftyaxis'
+                         }, // Left y-axis.
+                         1: {
+                             side: 'right',
+                             label: 'rightyaxis'
+                         } // Right y-axis.
+                     }
+                 }
+
+                 };
+                 var formatter = new google.visualization.NumberFormat({pattern:'####'});
+                 formatter.format(data, 0); // Apply formatter to first column
+
+                 const chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+                 chart.draw(data, options);
+               }
+       </script>
+     </body>
+    </html>
